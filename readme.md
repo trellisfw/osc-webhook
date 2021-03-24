@@ -6,7 +6,7 @@ The OSC-Serverless Function will generate a PAC according to the content of the 
 
 
 > **Oblivous Smart Contracts Webhooks Service - Features**
-> This service relies in the OADA API and Axios (to connect to the Azure Serverless Functions). The following a summarized loist of features provided by this service:
+> This service relies in the OADA API and Axios (to connect to the Azure Serverless Functions). The following is a summarized list of features provided by this service:
 
 > 1. Determines the semantic to trigger webhooks that can call OSCs to generate PACs (Private Automated Certifications).
 > 2. Filters the change feed to select only the changes that need a new PAC generated.
@@ -14,4 +14,4 @@ The OSC-Serverless Function will generate a PAC according to the content of the 
 > 4. Retrieves a valid/invalid PAC.
 
 ## Oblivous Smart Contracts Webhooks Service - Algorithm Generator
-We designed an algorithm generator. We can call individual pieces of certified code according to the requester characteristics (farmer, hauler, or processor.) The initial PoC calls the same OSC for all entities.
+We designed an algorithm generator. We can call individual pieces of certified code according to the requester characteristics (farmer, hauler, or processor.) The initial PoC calls the same OSC for all entities. However, endpoints can be changed in the configuration file.
