@@ -1,0 +1,21 @@
+version: '3.9'
+
+services:
+  osc-webhook:
+    build:
+      context: .
+    container_name: osc-webhook
+    ports:
+      - 80
+    restart: unless-stopped
+    volumes:
+      - .:/code/osc-webhook
+    environment:
+      - NODE_TLS_REJECT_UNAUTHORIZED
+      - NODE_ENV=${NODE_ENV:-development}
+      - DEBUG=${DEBUG:-*info*,*warn*,*error*}
+      - notifyurl
+      - domain
+      - tokenToRequestAgainstOADA
+      - incomingToken
+      - cron

@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+
+  permissions-handler:
+    volumes:
+      - ./services/osc-webhook/support/scopes.js:/code/scopes/additional-scopes/monitor_scopes.js
+
+  # Add our proxy route to nginx
+  proxy:
+    volumes:
+      - ./services/osc-webhook/support/osc-webhook.subfolder.conf:/config/nginx/proxy-confs/osc-webhook.subfolder.conf
+
+  osc-webhook:
+    extends:
+      file: ./services/osc-webhook/docker-compose.yml
+      service: osc-webhook
+    build:
+      context: ./services/osc-webhook
+    volumes:
+      - ./services/osc-webhook:/code/osc-webhook
