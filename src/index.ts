@@ -2,9 +2,9 @@
 import axios from "axios";
 import _ from "lodash";
 import debug from "debug";
-import { Service } from '@oada/jobs';
+import { OADAClient, connect } from '@oada/client';
 import config from "./config.js";
-import secrets from "./secrets";
+import secrets from "../support/secrets";
 //import porkTrees from '@pork/trees';
 //const { asntree } = porkTrees;
 import { ListWatch } from "@oada/list-lib";
@@ -14,7 +14,6 @@ import { ListWatch } from "@oada/list-lib";
 const OSC_WEBHOOK = "osc-webhooks";
 const OSC_WEBHOOK_SERVICE = "osc-webhooks-service-generates-pac";
 
-let OADA: any = null;
 const info = debug(`${OSC_WEBHOOK}:info`);
 const trace = debug(`${OSC_WEBHOOK}:trace`);
 
@@ -23,31 +22,28 @@ const hackathon_id = "farmer.porkhack3.openag.io";
 const entity: string = config.get("entity");
 //const TOKEN: any = secrets[hackathon_id][entity]["token"];
 //console.log("--> token ", TOKEN);
-const TOKEN = config.get('token');
-let DOMAIN = config.get('domain') || '';
+const token = config.get('token');
+let domain = config.get('domain') || '';
 const PATH = config.get('path');
 const OSC_WEBHOOK_ENDPOINT = config.get('oscwebhook');
 
-if (DOMAIN.match(/^http/)) DOMAIN = DOMAIN.replace(/^https:\/\//, '')
+let oada: OADAClient = null;
 
-if (DOMAIN === 'localhost' || DOMAIN === 'proxy') {
+if (domain.match(/^http/)) domain = domain.replace(/^https:\/\//, '')
+
+if (domain === 'localhost' || domain === 'proxy') {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
 }
 
-const service = new Service(OSC_WEBHOOK, DOMAIN, TOKEN, 1, {
-  finishReporters: []
-}); // 1 concurrent job
+//const service = new Service(OSC_WEBHOOK, DOMAIN, TOKEN, 1, {
+//  finishReporters: []
+//}); // 1 concurrent job
 
 // ============================================================================
 // starting serverless-computing service
 // ============================================================================
-console.log("--> starting serverless-computing webhooks service");
-service.start().catch(e => console.error('Service threw uncaught error: ', e));
 
 // local connection
-const _conn = service.getClient(DOMAIN).clone(TOKEN);
-OADA = _conn;
-
 
 // Hashtable for ASNs 
 export interface ASNHash {
@@ -203,7 +199,7 @@ async function triggerOSCWebhook(certifications: Array<CertificationPayload>) {
           let _path = `${PATH}${certification.entity_path}/${certification.entity_type}/certifications/${certification.entity_certification_id}`;
 
           let _data = { pac: response.data.pac };
-          await OADA.put({
+          await oada.put({
             path: _path,
             data: _data
           }).then((result: any) => {
@@ -307,7 +303,7 @@ async function manageChanges(change: any) {
  */
 async function watchASNs() {
   console.log("--> Watching ASNs endpoint for changes.");
-  const requestId = await OADA.watch({
+  const requestId = await oada.watch({
     path: PATH,
     watchCallback: (change: any) => {
       if (change.type === "merge" && change.path.length > "/day-index/YYYY-MM-DD/".length) {
@@ -317,12 +313,17 @@ async function watchASNs() {
   })
 }
 
-// starting watching for changes in the ASNs
+
+(async () => {
+
 try {
+  oada = await connect({ domain, token });
+
+// starting watching for changes in the ASNs
   watchASNs();
 } catch (error) {
   console.log("--> Error: ", error);
 }
 
-
+})()
 

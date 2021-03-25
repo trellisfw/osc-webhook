@@ -34,12 +34,15 @@ module.exports = (defaults) => {
   nconf.env({ separator: "__", parseValues: true });
 
   // Load an external (optional) config file
+
   var config = nconf.get("config");
   if (config) {
-    if (!fs.existsSync(config)) {
+    if (!fs.existsSync(`${__dirname}/${config}`)) {
       throw new Error("Could not find config file: " + config);
     }
-    nconf.use("literal", require(config));
+    let cfg = require(config);
+    if (cfg.default) cfg = cfg.default;
+    nconf.use("literal", cfg);
   }
 
   if (defaults) {
